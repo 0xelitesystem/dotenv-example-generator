@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+<title>dotenv Example Generator - paste a real .env, get a safe .env.example</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Turn a real .env file into a sanitized .env.example: secret values stripped, comments and structure kept. Runs entirely in your browser with no external dependencies.">
+<link rel="canonical" href="https://0xelitesystem.github.io/dotenv-example-generator/">
+<meta property="og:title" content="dotenv Example Generator - paste a real .env, get a safe .env.example">
+<meta property="og:description" content="Turn a real .env file into a sanitized .env.example: secret values stripped, comments and structure kept. Runs entirely in your browser with no external dependencies.">
+<meta property="og:url" content="https://0xelitesystem.github.io/dotenv-example-generator/">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "dotenv Example Generator",
+  "description": "Turn a real .env file into a sanitized .env.example: secret values stripped, comments and structure kept. Runs entirely in your browser with no external dependencies.",
+  "url": "https://0xelitesystem.github.io/dotenv-example-generator/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<script>
+(function () {
+  var t = 'dark';
+  try {
+    var s = localStorage.getItem('deg-theme');
+    if (s === 'light' || s === 'dark') { t = s; }
+  } catch (e) {}
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<style>
+  :root {
+    --mono: ui-monospace, "Cascadia Code", "Cascadia Mono", Consolas, "JetBrains Mono", Menlo, monospace;
+    --bg: #0b0e0c;
+    --bg-glow: rgba(242, 169, 76, 0.05);
+    --panel: #10160f;
+    --panel-head: #0d120c;
+    --border: #26332a;
+    --border-soft: #1a241d;
+    --text: #d8e2d9;
+    --dim: #82937f;
+    --faint: #56655a;
+    --accent: #f2a94c;
+    --accent-ink: #191106;
+    --accent-dim: rgba(242, 169, 76, 0.13);
+    --key: #7cd69c;
+    --val: #f2a94c;
+    --comment: #5f7a68;
+    --danger: #e5715f;
+    --danger-dim: rgba(229, 113, 95, 0.12);
+    --ok: #7cd69c;
+    --ok-dim: rgba(124, 214, 156, 0.1);
+    --raw-dim: rgba(229, 113, 95, 0.07);
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #f1eee4;
+    --bg-glow: rgba(138, 84, 16, 0.06);
+    --panel: #faf8f0;
+    --panel-head: #f3f0e5;
+    --border: #c9c3ae;
+    --border-soft: #ddd7c4;
+    --text: #262e27;
+    --dim: #5d6a5e;
+    --faint: #8b948a;
+    --accent: #96590d;
+    --accent-ink: #fdf9ef;
+    --accent-dim: rgba(150, 89, 13, 0.12);
+    --key: #176a41;
+    --val: #96590d;
+    --comment: #74806f;
+    --danger: #a83c2b;
+    --danger-dim: rgba(168, 60, 43, 0.1);
+    --ok: #176a41;
+    --ok-dim: rgba(23, 106, 65, 0.1);
+    --raw-dim: rgba(168, 60, 43, 0.07);
+    --shadow: 0 8px 24px rgba(60, 50, 20, 0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; }
+  body {
+    min-height: 100%;
+    background: var(--bg);
+    background-image: radial-gradient(1100px 420px at 50% -80px, var(--bg-glow), transparent 70%);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.55;
+    padding-bottom: 48px;
+  }
+  :root[data-theme="dark"] body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 3px);
+    z-index: 0;
+  }
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration: none; }
+
+  /* header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 0 14px;
+    border-bottom: 1px dashed var(--border);
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .prompt { color: var(--faint); }
+  h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+  }
+  h1 .hl { color: var(--accent); }
+  .caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    margin-left: 4px;
+    vertical-align: text-bottom;
+    background: var(--accent);
+    animation: blink 1.15s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .caret { animation: none; }
+    .panel, .hero { animation: none !important; }
+  }
+  .head-actions { display: flex; align-items: center; gap: 8px; }
+
+  /* hero */
+  .hero { padding: 26px 0 8px; animation: rise 0.5s ease both; }
+  .pitch { font-size: 15px; max-width: 62ch; }
+  .pitch b { color: var(--accent); font-weight: 700; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .badge {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ok);
+    background: var(--ok-dim);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 9px;
+  }
+  .badge.amber { color: var(--accent); background: var(--accent-dim); }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* options */
+  .options {
+    display: flex;
+    gap: 20px 36px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin: 22px 0 16px;
+    padding: 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+  }
+  fieldset { border: 0; }
+  legend, .opt-title {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .radio-row { display: flex; gap: 6px 18px; flex-wrap: wrap; }
+  .opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+  }
+  .opt input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+  .opt code {
+    background: var(--accent-dim);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 12px;
+    color: var(--val);
+  }
+  .opt-note { font-size: 12px; color: var(--faint); margin-top: 6px; max-width: 46ch; }
+
+  /* main grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    animation: rise 0.5s ease both;
+  }
+  .panel:nth-child(2) { animation-delay: 0.08s; }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 12px;
+    background: var(--panel-head);
+    border-bottom: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+  }
+  .panel-title {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .panel-title em { color: var(--accent); font-style: normal; }
+  .panel-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 11px;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease, transform 0.06s ease;
+  }
+  .btn:hover { background: var(--accent-dim); border-color: var(--accent); }
+  .btn:active { transform: translateY(1px); }
+  .btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+  .btn[disabled]:hover { background: transparent; border-color: var(--border); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 700;
+  }
+  .btn-primary:hover { background: var(--accent); filter: brightness(1.08); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+  textarea {
+    display: block;
+    width: 100%;
+    min-height: 380px;
+    padding: 14px;
+    background: transparent;
+    border: 0;
+    resize: vertical;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre;
+    overflow: auto;
+  }
+  textarea:focus-visible { outline-offset: -2px; }
+  textarea::placeholder { color: var(--faint); }
+
+  .out {
+    min-height: 380px;
+    max-height: 560px;
+    overflow: auto;
+    padding: 14px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .line { white-space: pre; }
+  .line.raw { background: var(--raw-dim); }
+  .k { color: var(--key); }
+  .v { color: var(--val); }
+  .kept { color: var(--text); }
+  .c { color: var(--comment); }
+  .r { color: var(--danger); }
+  .empty-hint { color: var(--faint); white-space: normal; }
+
+  /* stats + notices */
+  .report { margin-top: 16px; display: grid; gap: 10px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+    border: 1px solid var(--border-soft);
+    background: var(--panel);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .chip b { font-size: 14px; color: var(--text); letter-spacing: 0; }
+  .chip.warn b { color: var(--danger); }
+  .chip.good b { color: var(--ok); }
+  .notice {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    background: var(--accent-dim);
+    border-radius: 4px;
+    padding: 10px 13px;
+    font-size: 13px;
+  }
+  .notice.calm { border-left-color: var(--ok); background: var(--ok-dim); color: var(--dim); }
+  .notice.bad { border-left-color: var(--danger); background: var(--danger-dim); }
+  .notice b { color: var(--accent); }
+  .notice.calm b { color: var(--ok); }
+  .warn-list { list-style: none; display: grid; gap: 4px; font-size: 12px; color: var(--dim); }
+  .warn-list li::before { content: "! "; color: var(--danger); font-weight: 700; }
+
+  /* gitignore box */
+  .gitignore {
+    margin-top: 26px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .gitignore .panel-head { border-bottom: 1px solid var(--border-soft); }
+  .gitignore-body { padding: 14px; display: grid; gap: 10px; }
+  .gitignore pre {
+    background: var(--panel-head);
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+  .gitignore .why { font-size: 12.5px; color: var(--dim); max-width: 78ch; }
+  .gitignore .why b { color: var(--danger); }
+
+  .privacy-line {
+    margin-top: 22px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--dim);
+  }
+  .privacy-line b { color: var(--ok); }
+
+  footer {
+    margin-top: 26px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    display: flex;
+    gap: 8px 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--faint);
+  }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    textarea, .out { min-height: 260px; }
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 0 12px; }
+    .options { gap: 16px; }
+    .pitch { font-size: 14px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <span class="prompt" aria-hidden="true">$</span>
+      <h1>dotenv-example-<span class="hl">generator</span><span class="caret" aria-hidden="true"></span></h1>
+    </div>
+    <div class="head-actions">
+      <button type="button" class="btn" id="theme-toggle" aria-pressed="false">Light mode</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <p class="pitch">Paste a real <b>.env</b>, get a committable <b>.env.example</b>. Secret values are stripped, comments and structure are kept, and nothing ever leaves this page, so pasting live credentials here is safe.</p>
+    <div class="badges">
+      <span class="badge">zero network requests</span>
+      <span class="badge">no external dependencies</span>
+      <span class="badge amber">runs 100% in your browser</span>
+    </div>
+  </section>
+
+  <section class="options" aria-label="Sanitizer options">
+    <fieldset>
+      <legend>Placeholder style</legend>
+      <div class="radio-row" role="radiogroup">
+        <label class="opt"><input type="radio" name="style" value="empty" checked> empty <code>KEY=</code></label>
+        <label class="opt"><input type="radio" name="style" value="generic"> <code>your-value-here</code></label>
+        <label class="opt"><input type="radio" name="style" value="hint"> hint comment from key name</label>
+      </div>
+    </fieldset>
+    <div>
+      <span class="opt-title">Non-secret values</span>
+      <label class="opt"><input type="checkbox" id="keep-nonsecret"> keep values that look non-secret</label>
+      <p class="opt-note">Off by default. When on, keeps only booleans, plain numbers, and localhost URLs without credentials. Everything else is still stripped.</p>
+    </div>
+  </section>
+
+  <main class="grid">
+    <section class="panel" aria-label="Input">
+      <div class="panel-head">
+        <label class="panel-title" for="env-input">input / <em>.env</em></label>
+        <div class="panel-btns">
+          <button type="button" class="btn" id="load-example">Load example</button>
+          <button type="button" class="btn" id="clear-input">Clear</button>
+        </div>
+      </div>
+      <textarea id="env-input" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" placeholder="# paste your .env here
+DATABASE_URL=postgres://user:pass@host:5432/db
+API_KEY=..."></textarea>
+    </section>
+
+    <section class="panel" aria-label="Output">
+      <div class="panel-head">
+        <span class="panel-title" id="out-label">output / <em>.env.example</em></span>
+        <div class="panel-btns">
+          <button type="button" class="btn" id="copy-out" disabled>Copy</button>
+          <button type="button" class="btn btn-primary" id="download-out" disabled>Download .env.example</button>
+        </div>
+      </div>
+      <pre class="out" id="env-output" role="region" aria-labelledby="out-label" tabindex="0"><span class="empty-hint">Sanitized output appears here live as you type.</span></pre>
+    </section>
+  </main>
+
+  <section class="report" id="report" aria-live="polite"></section>
+
+  <section class="gitignore" aria-label="gitignore reminder">
+    <div class="panel-head">
+      <span class="panel-title">.gitignore reminder</span>
+      <div class="panel-btns">
+        <button type="button" class="btn" id="copy-gitignore">Copy lines</button>
+      </div>
+    </div>
+    <div class="gitignore-body">
+      <pre id="gitignore-lines">.env
+.env.*
+!.env.example</pre>
+      <p class="why">Why: a committed <b>.env</b> hands every credential inside it to anyone who can read the repo, and git history keeps the file even after you delete it. Ignore the real files, allow only the sanitized example.</p>
+    </div>
+  </section>
+
+  <p class="privacy-line"><b>Privacy is the whole point:</b> this page makes zero network requests. Your .env is parsed in memory, in this tab, and is never uploaded, stored, or sent anywhere.</p>
+
+  <footer>
+    <span>An <a href="https://elitesystem.ai">elitesystem.ai</a> tool</span>
+    <span><a href="https://github.com/0xelitesystem/dotenv-example-generator">Source on GitHub</a></span>
+    <span>No external dependencies</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- pure logic ---------- */
+
+  function entropyOf(s) {
+    var freq = {}, i, ch, e = 0, n = s.length, k, p;
+    if (!n) { return 0; }
+    for (i = 0; i < n; i++) { ch = s.charAt(i); freq[ch] = (freq[ch] || 0) + 1; }
+    for (k in freq) {
+      if (Object.prototype.hasOwnProperty.call(freq, k)) {
+        p = freq[k] / n;
+        e -= p * Math.log(p) / Math.LN2;
+      }
+    }
+    return e;
+  }
+
+  var PLACEHOLDER_WORDS = ['changeme', 'change-me', 'change_me', 'example', 'your-', 'your_', 'placeholder', 'dummy', 'sample', 'fake', 'xxxx', 'todo', 'replace-me', 'not-a-real'];
+
+  function isPlaceholderish(v) {
+    var low = v.toLowerCase(), i;
+    for (i = 0; i < PLACEHOLDER_WORDS.length; i++) {
+      if (low.indexOf(PLACEHOLDER_WORDS[i]) !== -1) { return true; }
+    }
+    return false;
+  }
+
+  function looksLikeLiveSecret(v) {
+    if (isPlaceholderish(v)) { return false; }
+    // URL with user:pass@ credentials
+    if (/^[a-z][a-z0-9+.-]*:\/\/[^\s\/@]+:[^\s\/@]+@/i.test(v)) { return true; }
+    if (/\s/.test(v)) { return false; }
+    // long hex or base64-shaped blobs
+    if (/^[0-9a-f]{32,}$/i.test(v)) { return true; }
+    if (/^[A-Za-z0-9+\/_=-]{40,}$/.test(v) && /[A-Z]/.test(v) && /[a-z]/.test(v) && /[0-9]/.test(v)) { return true; }
+    // high-entropy strings
+    var e = entropyOf(v);
+    if (v.length >= 20 && e >= 3.7) { return true; }
+    if (v.length >= 32 && e >= 3.3) { return true; }
+    return false;
+  }
+
+  function isNonSecretValue(v) {
+    if (/^(true|false|yes|no|on|off)$/i.test(v)) { return true; }
+    if (/^-?\d+(\.\d+)?$/.test(v)) { return true; }
+    if (v.indexOf('@') === -1 && /^[a-z][a-z0-9+.-]*:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:\d+)?(\/\S*)?$/i.test(v)) { return true; }
+    if (/^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(v)) { return true; }
+    return false;
+  }
+
+  var ABBREV = { db: 'database', env: 'environment', pwd: 'password', pw: 'password', cfg: 'config', dir: 'directory', addr: 'address', num: 'number' };
+  var DBISH = ['database', 'postgres', 'postgresql', 'pg', 'mysql', 'mariadb', 'mongo', 'mongodb', 'redis', 'amqp', 'rabbitmq', 'kafka', 'sql', 'sqlite', 'elastic', 'elasticsearch', 'clickhouse'];
+
+  function hintFor(key) {
+    var words = key.toLowerCase().split(/[_.]+/), out = [], i, w, last, rest, dbish;
+    for (i = 0; i < words.length; i++) {
+      w = words[i];
+      if (!w) { continue; }
+      out.push(ABBREV[w] || w);
+    }
+    if (!out.length) { return 'your value'; }
+    last = out[out.length - 1];
+    if ((last === 'url' || last === 'uri' || last === 'dsn') && out.length > 1) {
+      rest = out.slice(0, -1);
+      dbish = false;
+      for (i = 0; i < rest.length; i++) {
+        if (DBISH.indexOf(rest[i]) !== -1) { dbish = true; break; }
+      }
+      return 'your ' + rest.join(' ') + (dbish ? ' connection string' : ' url');
+    }
+    if (last === 'port') { return 'port number'; }
+    if (last === 'host' || last === 'hostname') { return 'host name'; }
+    return 'your ' + out.join(' ');
+  }
+
+  // Parses one line. Returns:
+  //   {type:'blank'} | {type:'comment'} | {type:'raw'}
+  //   {type:'pair', indent, exp, key, eq, value, quote, comment}
+  function parseLine(line) {
+    if (/^\s*$/.test(line)) { return { type: 'blank' }; }
+    if (/^\s*#/.test(line)) { return { type: 'comment' }; }
+    var m = line.match(/^(\s*)(export\s+)?([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)([\s\S]*)$/);
+    if (!m) { return { type: 'raw' }; }
+    var rest = m[5];
+    var value = '', quote = null, comment = null, i, chr, closed, after;
+
+    if (rest.charAt(0) === '"' || rest.charAt(0) === "'") {
+      quote = rest.charAt(0);
+      closed = -1;
+      for (i = 1; i < rest.length; i++) {
+        chr = rest.charAt(i);
+        if (quote === '"' && chr === '\\') { i++; continue; }
+        if (chr === quote) { closed = i; break; }
+      }
+      if (closed === -1) { return { type: 'raw' }; } // unterminated quote
+      value = rest.slice(1, closed);
+      after = rest.slice(closed + 1);
+      if (/^\s*$/.test(after)) {
+        comment = null;
+      } else {
+        var cm = after.match(/^\s*(#[\s\S]*)$/);
+        if (!cm) { return { type: 'raw' }; } // junk after closing quote
+        comment = cm[1];
+      }
+    } else {
+      var ci = -1;
+      for (i = 0; i < rest.length; i++) {
+        if (rest.charAt(i) === '#' && (i === 0 || /\s/.test(rest.charAt(i - 1)))) { ci = i; break; }
+      }
+      if (ci >= 0) {
+        value = rest.slice(0, ci).replace(/\s+$/, '').replace(/^\s+/, '');
+        comment = rest.slice(ci);
+      } else {
+        value = rest.replace(/\s+$/, '').replace(/^\s+/, '');
+        comment = null;
+      }
+    }
+    return { type: 'pair', indent: m[1], exp: m[2] || '', key: m[3], eq: m[4], value: value, quote: quote, comment: comment };
+  }
+
+  function wrapQuote(v, quote) {
+    return quote ? quote + v + quote : v;
+  }
+
+  // opts: {style: 'empty'|'generic'|'hint', keep: bool}
+  // returns {lines:[{text, spans:[{t,c}], raw:bool}], stats, warnings}
+  function sanitize(text, opts) {
+    var srcLines = text.length ? text.split(/\r?\n/) : [];
+    var lines = [], warnings = [];
+    var stats = { vars: 0, stripped: 0, secrets: 0, kept: 0, raw: 0 };
+    var i, line, p, head, tail, valText, valClass, outText, spans;
+
+    for (i = 0; i < srcLines.length; i++) {
+      line = srcLines[i];
+      p = parseLine(line);
+
+      if (p.type === 'blank') {
+        lines.push({ text: line, spans: [{ t: line, c: '' }], raw: false });
+        continue;
+      }
+      if (p.type === 'comment') {
+        lines.push({ text: line, spans: [{ t: line, c: 'c' }], raw: false });
+        continue;
+      }
+      if (p.type === 'raw') {
+        stats.raw++;
+        warnings.push('Line ' + (i + 1) + ' could not be parsed and was passed through unchanged.');
+        lines.push({ text: line, spans: [{ t: line, c: 'r' }], raw: true });
+        continue;
+      }
+
+      stats.vars++;
+      head = p.indent + p.exp;
+      tail = p.comment ? ' ' + p.comment : '';
+      valText = '';
+      valClass = 'v';
+
+      if (opts.keep && p.value !== '' && isNonSecretValue(p.value)) {
+        stats.kept++;
+        valText = wrapQuote(p.value, p.quote);
+        valClass = 'kept';
+      } else if (p.value === '') {
+        valText = '';
+      } else {
+        stats.stripped++;
+        if (looksLikeLiveSecret(p.value)) { stats.secrets++; }
+        if (opts.style === 'generic') {
+          valText = wrapQuote('your-value-here', p.quote);
+        } else if (opts.style === 'hint') {
+          valText = '';
+          if (!p.comment) { tail = ' # ' + hintFor(p.key); }
+        } else {
+          valText = '';
+        }
+      }
+
+      outText = head + p.key + p.eq + valText + tail;
+      spans = [];
+      if (head) { spans.push({ t: head, c: '' }); }
+      spans.push({ t: p.key, c: 'k' });
+      spans.push({ t: p.eq, c: '' });
+      if (valText) { spans.push({ t: valText, c: valClass }); }
+      if (tail) { spans.push({ t: tail, c: 'c' }); }
+      lines.push({ text: outText, spans: spans, raw: false });
+    }
+    return { lines: lines, stats: stats, warnings: warnings };
+  }
+
+  /* ---------- dom ---------- */
+
+  var input = document.getElementById('env-input');
+  var output = document.getElementById('env-output');
+  var report = document.getElementById('report');
+  var copyBtn = document.getElementById('copy-out');
+  var downloadBtn = document.getElementById('download-out');
+  var keepBox = document.getElementById('keep-nonsecret');
+  var themeBtn = document.getElementById('theme-toggle');
+  var currentText = '';
+
+  function selectedStyle() {
+    var radios = document.querySelectorAll('input[name="style"]'), i;
+    for (i = 0; i < radios.length; i++) {
+      if (radios[i].checked) { return radios[i].value; }
+    }
+    return 'empty';
+  }
+
+  function el(tag, cls, txt) {
+    var e = document.createElement(tag);
+    if (cls) { e.className = cls; }
+    if (txt !== undefined) { e.textContent = txt; }
+    return e;
+  }
+
+  function renderOutput(result) {
+    output.textContent = '';
+    if (!result.lines.length) {
+      output.appendChild(el('span', 'empty-hint', 'Sanitized output appears here live as you type.'));
+      return;
+    }
+    var frag = document.createDocumentFragment(), i, j, lineEl, ln, sp;
+    for (i = 0; i < result.lines.length; i++) {
+      ln = result.lines[i];
+      lineEl = el('div', 'line' + (ln.raw ? ' raw' : ''));
+      if (ln.text === '') {
+        lineEl.textContent = '\u00a0';
+        lineEl.setAttribute('aria-hidden', 'true');
+      } else {
+        for (j = 0; j < ln.spans.length; j++) {
+          sp = ln.spans[j];
+          if (sp.c) { lineEl.appendChild(el('span', sp.c, sp.t)); }
+          else { lineEl.appendChild(document.createTextNode(sp.t)); }
+        }
+      }
+      frag.appendChild(lineEl);
+    }
+    output.appendChild(frag);
+  }
+
+  function chip(label, value, cls) {
+    var c = el('span', 'chip' + (cls ? ' ' + cls : ''));
+    c.appendChild(el('b', '', String(value)));
+    c.appendChild(document.createTextNode(' ' + label));
+    return c;
+  }
+
+  function renderReport(result, hasInput) {
+    report.textContent = '';
+    if (!hasInput) { return; }
+    var s = result.stats;
+
+    var chips = el('div', 'chips');
+    chips.appendChild(chip(s.vars === 1 ? 'variable' : 'variables', s.vars));
+    chips.appendChild(chip('stripped', s.stripped));
+    chips.appendChild(chip(s.secrets === 1 ? 'likely live secret' : 'likely live secrets', s.secrets, s.secrets ? 'warn' : 'good'));
+    if (s.kept) { chips.appendChild(chip('kept', s.kept, 'good')); }
+    if (s.raw) { chips.appendChild(chip('passed through', s.raw, 'warn')); }
+    report.appendChild(chips);
+
+    if (s.secrets > 0) {
+      var n = el('div', 'notice');
+      n.appendChild(el('b', '', String(s.secrets)));
+      n.appendChild(document.createTextNode(
+        s.secrets === 1
+          ? ' value that looks like a live secret was stripped. Rotate it if this file was ever committed or shared.'
+          : ' values that look like live secrets were stripped. Rotate them if this file was ever committed or shared.'
+      ));
+      report.appendChild(n);
+    } else if (s.vars > 0) {
+      report.appendChild(el('div', 'notice calm', 'No values looked like live credentials. Every value was still sanitized according to your settings.'));
+    }
+
+    if (result.warnings.length) {
+      var list = el('ul', 'warn-list'), i;
+      for (i = 0; i < result.warnings.length; i++) {
+        list.appendChild(el('li', '', result.warnings[i]));
+      }
+      report.appendChild(list);
+    }
+  }
+
+  function run() {
+    var text = input.value;
+    var result = sanitize(text, { style: selectedStyle(), keep: keepBox.checked });
+    var outLines = [], i;
+    for (i = 0; i < result.lines.length; i++) { outLines.push(result.lines[i].text); }
+    currentText = outLines.join('\n');
+    renderOutput(result);
+    renderReport(result, text.length > 0);
+    var empty = currentText.replace(/\s/g, '') === '' && result.lines.length === 0;
+    copyBtn.disabled = empty;
+    downloadBtn.disabled = empty;
+  }
+
+  function flash(btn, label) {
+    if (btn.getAttribute('data-busy')) { return; }
+    var orig = btn.textContent;
+    btn.setAttribute('data-busy', '1');
+    btn.textContent = label;
+    setTimeout(function () {
+      btn.textContent = orig;
+      btn.removeAttribute('data-busy');
+    }, 1200);
+  }
+
+  function copyText(text, btn) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { flash(btn, 'Copied'); },
+        function () { fallback(); flash(btn, 'Copied'); }
+      );
+    } else {
+      fallback();
+      flash(btn, 'Copied');
+    }
+  }
+
+  copyBtn.addEventListener('click', function () {
+    copyText(currentText, copyBtn);
+  });
+
+  downloadBtn.addEventListener('click', function () {
+    var body = currentText;
+    if (body && body.charAt(body.length - 1) !== '\n') { body += '\n'; }
+    var blob = new Blob([body], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = '.env.example';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+    flash(downloadBtn, 'Saved');
+  });
+
+  document.getElementById('copy-gitignore').addEventListener('click', function () {
+    copyText(document.getElementById('gitignore-lines').textContent, document.getElementById('copy-gitignore'));
+  });
+
+  document.getElementById('clear-input').addEventListener('click', function () {
+    input.value = '';
+    run();
+    input.focus();
+  });
+
+  var EXAMPLE = [
+    '# Example environment file. Every value below is fake.',
+    '',
+    '# App',
+    'APP_NAME="dotenv example generator"',
+    'APP_ENV=development',
+    'DEBUG=true',
+    'PORT=3000',
+    '',
+    '# Database',
+    'DATABASE_URL=postgres://admin:changeme@localhost:5432/appdb',
+    'REDIS_URL=redis://localhost:6379',
+    '',
+    '# Third-party (obviously fake placeholders)',
+    'export MAIL_API_KEY=changeme',
+    "PAYMENT_SECRET='EXAMPLE-value'",
+    'SIGNING_SALT="s3=lt with = signs" # inline comment survives',
+    'FEATURE_FLAGS=beta,new-nav # comma list',
+    '',
+    'this line will not parse'
+  ].join('\n');
+
+  document.getElementById('load-example').addEventListener('click', function () {
+    input.value = EXAMPLE;
+    run();
+    input.focus();
+  });
+
+  input.addEventListener('input', run);
+  keepBox.addEventListener('change', run);
+  var radios = document.querySelectorAll('input[name="style"]'), ri;
+  for (ri = 0; ri < radios.length; ri++) {
+    radios[ri].addEventListener('change', run);
+  }
+
+  /* ---------- theme ---------- */
+
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themeBtn.textContent = t === 'dark' ? 'Light mode' : 'Dark mode';
+    themeBtn.setAttribute('aria-pressed', t === 'light' ? 'true' : 'false');
+    try { localStorage.setItem('deg-theme', t); } catch (e) {}
+  }
+
+  themeBtn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    applyTheme(cur === 'light' ? 'dark' : 'light');
+  });
+
+  themeBtn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? 'Dark mode' : 'Light mode';
+  themeBtn.setAttribute('aria-pressed', document.documentElement.getAttribute('data-theme') === 'light' ? 'true' : 'false');
+
+  run();
+})();
+</script>
+</html>
