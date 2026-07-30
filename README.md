@@ -31,6 +31,10 @@ The tool splits your input into lines and parses each one in memory. Comment lin
 
 Everything runs in your browser. The page makes zero network requests: nothing you paste is uploaded, stored, or sent anywhere, which is the whole point of a tool you paste real credentials into. You can disconnect from the internet and it keeps working.
 
+## More
+
+Part of a catalog of single-file browser tools and plain-language references, all MIT licensed and dependency-free: [0xelitesystem.github.io](https://0xelitesystem.github.io/). Built by [elitesystem.ai](https://elitesystem.ai).
+
 ## License
 
 MIT
