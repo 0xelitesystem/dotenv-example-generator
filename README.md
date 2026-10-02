@@ -2,9 +2,7 @@
 
 Paste a real .env file and get a sanitized .env.example with secret values stripped and comments kept, ready to commit, all in your browser.
 
-## Live demo
-
-https://0xelitesystem.github.io/dotenv-example-generator/
+**Live demo:** https://0xelitesystem.github.io/dotenv-example-generator/
 
 ## Features
 
@@ -27,9 +25,35 @@ The tool splits your input into lines and parses each one in memory. Comment lin
 
 **Positioning note:** this tool sanitizes an env file so you can share it. It is a sibling of [env-var-checker](https://github.com/0xelitesystem/env-var-checker), which validates that every required variable is present. One checks, one scrubs, and they pair well: generate the .env.example here, then use env-var-checker to verify a teammate's real .env against it.
 
+## Use
+
+1. Paste your real `.env` file into the input box, or click Load example to use a fake sample.
+2. Pick a placeholder style: empty value, `your-value-here`, or a hint comment from the key name.
+3. Read the sanitized `.env.example` as it updates, and check the notices for lines that did not parse and how many values looked like live secrets.
+4. Click Copy or Download .env.example, then add the lines from the .gitignore reminder box to your repo.
+
+## Why this exists
+
+A `.env.example` is meant to be committed, which makes it a common place for a real key to leak. A tool you paste live credentials into should not need a server, so this is a single HTML file with no network calls and no tracking, under the MIT license.
+
 ## Privacy
 
 Everything runs in your browser. The page makes zero network requests: nothing you paste is uploaded, stored, or sent anywhere, which is the whole point of a tool you paste real credentials into. You can disconnect from the internet and it keeps working.
+
+If you use the theme toggle, your light or dark choice is saved in your browser's localStorage under the key `deg-theme`. Nothing you paste or type is stored.
+
+## Run locally
+
+```
+git clone https://github.com/0xelitesystem/dotenv-example-generator
+cd dotenv-example-generator
+```
+
+Open `index.html` in a browser. Or serve the folder with `python -m http.server` and visit http://localhost:8000.
+
+## Build
+
+No build step. The whole tool is one `index.html` file with inline CSS and JavaScript, and no dependencies.
 
 ## More
 
